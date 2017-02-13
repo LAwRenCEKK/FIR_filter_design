@@ -1,0 +1,74 @@
+% read the .wav file - replace # by your group number !
+% Variable x stores the wave and fs stores the sampling rate
+[x,fs] = audioread ('C:\Users\Administrator\Desktop\Lab3 Matlab\secret_code_group15.wav ');
+% perform FFT on the original signal to determine the frequency
+% of the `noise '
+L= length (x);
+NFFT = 2^ nextpow2 (L);
+X= fft (x, NFFT )/ fs;
+
+% Show the sampling rate .x
+fs
+% We know the sampling rate is __8000________
+
+%
+% We need now to plot our FFT to find the source of the noise . Plot single
+% - sided amplitude spectrum .
+f = fs /2* linspace (0,1, NFFT /2+1);
+plot (f ,2* abs (X (1: NFFT /2+1)));
+
+% reading the FFT we realize that the frequency we want to remove is
+% ___0.5______ ( hint : our noise is a pure sign wave ) Now specify the
+% frequency you want to eliminate by setting
+fkill = 0.5 ;
+% Hint : fkill is always in the range 0 - 1, and is normalized to frequency
+% fs /2 Determine coefficients of the FIR filter that will remove that
+% frequency . Start off the following blank with the value 4. Note the
+% following filter only works with even numbers .
+
+coeff = firgr(12,[0,fkill-.1,fkill,fkill+.1,1],[1,1,0,1,1],{'n','n','s','n','n'});
+
+% Plot the filter Plot the frequency response of the designed filter to
+% verify that it satisfies the requirements
+
+freqz (coeff ,1);
+
+% try different filter lengths in the firgr command
+% and find out which one is the best . Filter length of 4 is terrible
+% ideally your filter should only filter out the noise while passing
+% all other signals . Try increasing your filter length until you
+% can achieve an adequate result .
+%  plot ( with freqz ) each time you create a new filter .
+% pick a filter length too big the filter will " blow up ".
+%  are unsure whether your filter is blown up or not ,
+% .
+coeff * 32768
+% coeff * 32768= 0.6375    0.0001   -0.3656    0.0003    0.4171    0.0004    2.8404    0.0004    0.4171    0.0003   -0.3656    0.0001    0.6375
+% Please record these numbers . You will need them when doing lab3 .
+% filter the input signal x(t) using the designed FIR filter to get y(t)
+
+y = filtfilt (coeff , 1, x);
+
+% perform FFT on the filtered signal to observe the
+% absence of frequency of the `noise '
+Y= fft (y, NFFT )/L;
+% play the original (x) and filtered (y) file to hear the difference
+audioplayer (x,fs );
+
+audioplayer (y,fs );
+% The secret code for your group is ___GTAC15___________
+% create the vector for horizontal axis
+% create two plots
+subplot (2 ,1 ,1);
+
+% first one shows FFT of the original signal
+plot (f ,2* abs (X (1: NFFT /2+1)));
+xlabel ('Frequency (Hz)')
+ylabel ('|X(f)| ')
+subplot (2 ,1 ,2);
+% second one shows FFT of the filtered signal
+plot (f ,2* abs (Y (1: NFFT /2+1)))
+xlabel ('Frequency (Hz)')
+ylabel ('|Y(f)| ')
+ % write the file to disk replacing # by your group number !
+wavwrite (y, fs , 16, 'C:\Users\Administrator\Desktop\Lab3 Matlab\secret_code_group15_filtered.wav');
